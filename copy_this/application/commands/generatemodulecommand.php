@@ -14,6 +14,10 @@
  */
 class GenerateModuleCommand extends oxConsoleCommand
 {
+    const OXPS_VENDOR = 'oxps';
+    const OXPS_AUTHOR = 'OXID eSales AG';
+    const OXPS_URL = 'http://www.oxid-esales.com';
+    const OXPS_EMAIL = 'info@oxid-esales.com';
 
     /**
      * @var string Directory path where modules are stored
@@ -59,7 +63,11 @@ class GenerateModuleCommand extends oxConsoleCommand
      */
     public function execute(oxIOutput $oOutput)
     {
-        $oScaffold = $this->_buildScaffold($oOutput);
+        if ($this->getInput()->hasOption(array('p' => self::OXPS_VENDOR))) {
+            $oScaffold = $this->_buildScaffold($oOutput, true);
+        } else {
+            $oScaffold = $this->_buildScaffold($oOutput);
+        }
         $this->_generateModule($oScaffold);
 
         $oOutput->writeLn('Module generated successfully');
@@ -172,13 +180,14 @@ class GenerateModuleCommand extends oxConsoleCommand
      * Build scaffold object from user inputs
      *
      * @param oxIOutput $oOutput
+     * @param bool      $blOxPs
      *
      * @return stdClass
      */
-    protected function _buildScaffold(oxIOutput $oOutput)
+    protected function _buildScaffold(oxIOutput $oOutput, $blOxPs = false)
     {
         $oScaffold = new stdClass();
-        $oScaffold->sVendor = strtolower($this->_getUserInput('Vendor Prefix', true));
+        $oScaffold->sVendor = $blOxPs ? self::OXPS_VENDOR : strtolower($this->_getUserInput('Vendor Prefix', true));
 
         $blFirstRequest = true;
 
@@ -198,9 +207,9 @@ class GenerateModuleCommand extends oxConsoleCommand
             || !$this->_moduleIdAvailable($oScaffold->sModuleId));
 
         $oScaffold->sModuleDir = $this->_getModuleDir($oScaffold->sVendor, $oScaffold->sModuleName);
-        $oScaffold->sAuthor = $this->_getUserInput('Author', true);
-        $oScaffold->sUrl = $this->_getUserInput('Url', true);
-        $oScaffold->sEmail = $this->_getUserInput('Email', true);
+        $oScaffold->sAuthor = $blOxPs ? self::OXPS_AUTHOR : $this->_getUserInput('Author', true);
+        $oScaffold->sUrl = $blOxPs ? self::OXPS_URL : $this->_getUserInput('Url', true);
+        $oScaffold->sEmail = $blOxPs ? self::OXPS_EMAIL : $this->_getUserInput('Email', true);
 
         return $oScaffold;
     }
